@@ -8,9 +8,8 @@ https://sprig.hackclub.com/gallery/getting_started
 @addedOn: 2024-07-01
 */
 
-let gravity = 1 // gravity variable, can be changed to alter game speed/difficulty
 
-const wall = "s" // add wall variable, and list it as a solid
+const wall = "s" // add wall variable and set it to type s
 
 // add block types and colors as their individual types
 const Iblock = "1"
@@ -208,47 +207,31 @@ afterInput(() => {
   // Code that runs each time after a player presses any button
 });
 
-const gravityAccumulators = {
-  Iblock: 0,
-  Jblock: 0,
-  Lblock: 0,
-  Oblock: 0,
-  Sblock: 0,
-  Tblock: 0,
-  Zblock: 0
-};
+function canMoveDown(block) {
+  let canMove = true;
+  getAll(block).forEach(b => {
+    let x = b.x;
+    let y = b.y;
+    if (y + 1 >= height || getTile(x, y + 1).length > 0) {
+      canMove = false;
+    }
+  });
+  return canMove;
+}
 
-const applyGravity = () => {
-  // define a scaling factor based on the gravity value
-  const gravityScale = gravity; // Use the gravity value directly
+function moveDown(block) {
+  getAll(block).forEach(b => {
+    b.y += 1;
+  });
+}
 
-  for (const block of [Iblock, Jblock, Lblock, Oblock, Sblock, Tblock, Zblock]) {
-    const sprites = getAll(block);
-    sprites.forEach(sprite => {
-      // accumulate gravity
-      gravityAccumulators[block] += gravityScale;
+function applyGravity() {
+  [Iblock, Jblock, Lblock, Oblock, Sblock, Tblock, Zblock].forEach(block => {
+    if (canMoveDown(block)) {
+      moveDown(block);
+    }
+  });
+}
 
-      // check if the accumulated gravity is enough to move the sprite
-      while (gravityAccumulators[block] >= 1) {
-        // check if the sprite can move down without going below the bottom of the screen
-        if (sprite.y + 1 < height()) {
-          sprite.y += 1; // move the sprite down by 1 unit
-          gravityAccumulators[block] -= 1; // reduce the accumulator by 1
-        } else {
-          gravityAccumulators[block] = 0; // reset the accumulator if it can't move down
-          break;
-        }
-      }
-    });
-  }
-};
-
-// define a custom game loop function using setInterval
-const gameLoop = () => {
-  applyGravity(); // Apply gravity effect during the game loop iteration
-
-  // additional game logic can be added here if needded
-};
-
-// start the custom game loop with a setinterval
-setInterval(gameLoop, 1000 / 60); // attempt to run the game loop at 60 frames per second
+// Apply gravity every 500ms
+setInterval(applyGravity, 500);
